@@ -16,7 +16,7 @@ async def send_announcement(announcement: Announcement):
     return {"message": (
                 "Eyo! Tomorrow is Friday the 13th, we've all seen the Final"
                 " Destination movies, so nobody comes"
-                "to work tomorrow, okay? Okay"
+                " to work tomorrow, okay? Okay"
     )}
 
 if __name__ == "__main__":
