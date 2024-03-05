@@ -57,7 +57,7 @@ Elaboration: Events are immutable and appended to the log. Consumers maintain th
 1. Clone this repository to your local machine:
 
     ```bash
-    git clone git@github.com:tzone85/announcements.git
+    git clone https://github.com/tzone85/announcements.git
     cd announcements
     ```
 
