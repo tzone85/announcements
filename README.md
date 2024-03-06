@@ -60,15 +60,41 @@ Elaboration: Events are immutable and appended to the log. Consumers maintain th
     git clone https://github.com/tzone85/announcements.git
     cd announcements
     ```
+   
+2. Install a virtual environment and activate it:
 
-2. Build the Docker images for the application and Nginx server:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    cd src
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload 
+    You can now access the FastAPI application at `http://localhost:8000/api/v1/announcements`.
+    It will be empty initially, but you can add announcements using the POST `/api/v1/announcements` endpoint.
+    
+   Example Payload:
+       {
+        "message": "Eyo Halla At Me",
+        "id": "1"
+       }
+   
+   Example Response:
+       {
+        "message": "Eyo Halla At Me",
+        "id": "1"
+       }
+   
+    You can also access the Swagger documentation at `http://localhost:8000/swagger`.
+    ```
+
+3. Build the Docker images for the application and Nginx server:
 
     ```bash
     docker build -t announcement-systems .
     docker build -t nginx-server ./nginx
     ```
 
-3. Run the Docker containers:
+4. Run the Docker containers:
 
     ```bash
     docker run -d --name announcement_systems_app announcement-systems
