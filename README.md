@@ -3,21 +3,21 @@
 This repository contains a Proof-of-Concept (PoC) API developed with FastAPI to simulate announcements sent to employees.
 
 ## Case Study Tasks
-   - Propose at least 2 reasons why employees might be receiving the same
-     announcement more than once.
-   >__Concurrency Issues__: Sometimes, the system that handles the announcements may be poorly syncrhonized.
+- Propose at least 2 reasons why employees might be receiving the same
+  announcement more than once.
+>__Concurrency Issues__: Sometimes, the system that handles the announcements may be poorly syncrhonized.
 > This can lead to multiple instances of the scheduler, attempting to send announcements at the same time. This could result in duplicate notifications being dispatched to users.
-   
+
 > __Missing Message Delivery Confirmation__:  If there is no acknowledgement mechanism in place, say, it's an asynchronous system, sending the same messages again is highly possible.
 
 > __Database Transaction Failures__: Should the database transaction fail after the scheduler marks the announcement as sent, but before it's actually sent, the scheduler will attempt to send the announcement again, resulting in duplicate notifications.
- 
+
 > __Inconsistent Message Queue Processing__: If the message queue processing mechanism is not robust, it might process the same announcement multiple times due to message processing failures or retries.
 
 ## Propose An Architecture That Could Fix This Problem
 > __Event Sourcing Architecture__: Implement an event-driven architecture where announcements are stored as events in a log. Consumers process these events and send notifications. This ensures that each announcement is processed exactly once.
 Elaboration: Events are immutable and appended to the log. Consumers maintain their state and process events sequentially, guaranteeing exactly-once processing.
-> Another way could be to simply use a cloud service like AWS EventBridge, with your Event Busses that have rules containing your lambda functions, this could be appropriate especially if there are times whereby there would be a huge amount of messages that get sent out to employees or lots of messages that get sent out to a large number of people. 
+> Another way could be to simply use a cloud service like AWS EventBridge, with your Event Busses that have rules containing your lambda functions, this could be appropriate especially if there are times whereby there would be a huge amount of messages that get sent out to employees or lots of messages that get sent out to a large number of people.
 
 > By using cloud providers like AWS, we'd be able to leverage on it's elasticity based on the high volumes needed. And be able to continue when we don't need such high volumes without having to change any infrastructural setup.
 
@@ -61,14 +61,40 @@ Elaboration: Events are immutable and appended to the log. Consumers maintain th
     cd announcements
     ```
 
-2. Build the Docker images for the application and Nginx server:
+2. Install a virtual environment and activate it:
+
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    cd src
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload 
+    You can now access the FastAPI application at `http://localhost:8000/api/v1/announcements`.
+    It will be empty initially, but you can add announcements using the POST `/api/v1/announcements` endpoint.
+    
+   Example Payload:
+       {
+        "message": "Eyo Halla At Me",
+        "id": "1"
+       }
+   
+   Example Response:
+       {
+        "message": "Eyo Halla At Me",
+        "id": "1"
+       }
+   
+    You can also access the Swagger documentation at `http://localhost:8000/swagger`.
+    ```
+
+3. Build the Docker images for the application and Nginx server:
 
     ```bash
     docker build -t announcement-systems .
     docker build -t nginx-server ./nginx
     ```
 
-3. Run the Docker containers:
+4. Run the Docker containers:
 
     ```bash
     docker run -d --name announcement_systems_app announcement-systems
