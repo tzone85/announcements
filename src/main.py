@@ -50,7 +50,7 @@ async def create_announcement(announcement: Announcement):
 @app.put("/api/v1/announcements/{announcement_id}",
          response_model=Announcement)
 async def update_announcement(announcement_id: int,
-                               announcement: Announcement):
+                              announcement: Announcement):
     try:
         if announcement_id < 1 or announcement_id > Database.id_counter:
             raise HTTPException(status_code=404, detail=(
