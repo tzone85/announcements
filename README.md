@@ -1,7 +1,7 @@
 # Announcement API (PoC)
 
 This repository contains a Proof-of-Concept (PoC) API developed with FastAPI to simulate announcements sent to employees
-in a company. The API is built using Python 3.9.2 and FastAPI 0.68.0.
+in a company. The API is built using Python 3.9.2 and FastAPI 0.110.0.
 
 ### Project Structure
 
