@@ -1,0 +1,27 @@
+@startuml erd
+title Schema — announcements table
+
+!define TABLE(name) entity name << (T,#ffcc66) >>
+hide methods
+hide stereotypes
+
+TABLE(announcements) {
+  +id : INTEGER <<PK>>
+  --
+  message    : VARCHAR(5000)  NOT NULL
+  author     : VARCHAR(255)   NOT NULL
+  created_at : TIMESTAMPTZ    NOT NULL
+  updated_at : TIMESTAMPTZ    NOT NULL
+  deleted_at : TIMESTAMPTZ    NULL
+  ..
+  INDEX ix_announcements_deleted_at_id
+        (deleted_at, id)
+}
+
+note bottom of announcements
+  Soft delete: ``deleted_at IS NOT NULL``
+  hides the row from default queries.
+  Index supports the common
+  "list non-deleted, paginated" query.
+end note
+@enduml

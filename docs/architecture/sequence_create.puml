@@ -1,0 +1,36 @@
+@startuml sequence_create
+title Sequence — POST /api/v1/announcements
+
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+
+actor Client
+participant "FastAPI\nrouter" as Router
+participant "require_api_key" as Auth
+participant "Announcement\nService" as Service
+participant "SqlAlchemy\nRepository" as Repo
+database  "PostgreSQL" as DB
+participant "HttpWebhook\nNotifier" as Notifier
+collections "subscribers[]" as Subs
+
+Client -> Router : POST /api/v1/announcements\nheaders: x-api-key\nbody: {message, author}
+Router -> Auth : require_api_key()
+Auth --> Router : ok (else raise 401)
+Router -> Service : create(AnnouncementCreate)
+Service -> Repo : create(data)
+Repo -> DB : INSERT announcements
+DB --> Repo : row
+Repo --> Service : Announcement(id=...)
+Service -> Notifier : notify(announcement.created)
+Notifier -> Subs : POST JSON (fan-out, concurrent)
+Subs --> Notifier : 2xx (or fail)
+note right of Service
+  All-subscribers-fail raises
+  NotifierError; service logs
+  a warning and STILL returns
+  the created announcement.
+  Data change is not rolled back.
+end note
+Service --> Router : Announcement
+Router --> Client : 201 Created\nAnnouncement JSON
+@enduml
