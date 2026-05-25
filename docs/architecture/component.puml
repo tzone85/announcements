@@ -1,0 +1,65 @@
+@startuml component
+title Announcements — Component Architecture
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "HTTP Client" as client
+
+package "API layer" as api {
+  [FastAPI app\n(create_app)] as app
+  [/api/v1/router] as router
+  [require_api_key dep] as auth
+}
+
+package "Service layer" as svc {
+  [AnnouncementService] as service
+  interface "WebhookNotifier\n(Protocol)" as notif_proto
+  [HttpWebhookNotifier] as http_notif
+  [NullWebhookNotifier] as null_notif
+}
+
+package "Repository layer" as repo {
+  interface "AnnouncementRepository\n(Protocol)" as repo_proto
+  [SqlAlchemyAnnouncement\nRepository] as sa_repo
+  [InMemoryAnnouncement\nRepository] as mem_repo
+}
+
+package "Persistence" as db {
+  database "PostgreSQL\n(announcements)" as pg
+  [Alembic\nmigrations] as alembic
+}
+
+cloud "Webhook\nsubscribers" as subscribers
+
+client --> app : HTTPS
+app --> router
+router ..> auth : depends
+router --> service
+service --> repo_proto
+service --> notif_proto
+
+repo_proto <|.. sa_repo
+repo_proto <|.. mem_repo
+notif_proto <|.. http_notif
+notif_proto <|.. null_notif
+
+sa_repo --> pg : SQLAlchemy\nasync
+alembic --> pg : DDL
+http_notif --> subscribers : POST JSON
+
+note right of service
+  Business logic — orchestrates
+  repository writes + webhook
+  event emission. Webhook
+  failures do NOT roll back
+  data changes.
+end note
+
+note bottom of repo_proto
+  Liskov-substitutable.
+  In-memory used for unit
+  tests; SqlAlchemy in prod.
+end note
+@enduml

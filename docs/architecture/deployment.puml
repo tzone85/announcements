@@ -1,0 +1,31 @@
+@startuml deployment
+title Deployment — docker-compose topology
+
+skinparam shadowing false
+
+node "Docker host" {
+  node "nginx :80" as nginx {
+    [nginx reverse proxy]
+  }
+  node "api :8000" as apinode {
+    [uvicorn + FastAPI app]
+  }
+  node "migrate (one-shot)" as migrate {
+    [alembic upgrade head]
+  }
+  database "postgres :5432" as pg {
+    [PostgreSQL 16]
+    folder "pgdata volume" as vol
+  }
+}
+
+cloud "Internet" as web
+cloud "Webhook subscribers" as subs
+
+web --> nginx : :80
+nginx --> apinode : http://api:8000
+apinode --> pg : SQLAlchemy
+migrate --> pg : DDL on startup
+pg --> vol : data files
+apinode -> subs : webhook POSTs
+@enduml
